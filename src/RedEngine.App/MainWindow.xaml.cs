@@ -1,0 +1,73 @@
+using Microsoft.Win32;
+using RedEngine.Services;
+using System.Diagnostics;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RedEngine;
+
+public partial class MainWindow : Window
+{
+    private readonly SettingsService _settings = new();
+    private static readonly Dictionary<string, (string Description, string Status)> Modules = new()
+    {
+        ["Dumper"] = ("Browse accessible local files. Protected Roblox source is not extracted.", "Local file browser integration is planned."),
+        ["Resources"] = ("Manage local project resources.", "Resource CRUD and previews are planned."),
+        ["Menus"] = ("Authorized local development diagnostics.", "No live Roblox session is connected."),
+        ["Settings"] = ("Application preferences are stored locally.", "Settings file: " + new SettingsService().SettingsPath),
+        ["Misc"] = ("Utilities for local development projects.", "Additional utilities are planned."),
+        ["Chat"] = ("Community chat requires a configured service.", "Disconnected: no chat backend configured.")
+    };
+    public MainWindow()
+    {
+        InitializeComponent();
+        _settings.EnsureDefaults();
+        Editor.Text = "-- RedEngine local Lua workspace\n-- Roblox APIs are not available in standard Lua.\n\nprint(\"Hello from local Lua\")\n";
+    }
+    private void Navigate_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button b || b.Tag is not string module) return;
+        HomePanel.Visibility = Visibility.Collapsed; ModulePanel.Visibility = Visibility.Visible;
+        ModuleTitle.Text = module;
+        ExecutorView.Visibility = module == "Executor" ? Visibility.Visible : Visibility.Collapsed;
+        InfoView.Visibility = module == "Executor" ? Visibility.Collapsed : Visibility.Visible;
+        if (Modules.TryGetValue(module, out var info)) { Description.Text = info.Description; Status.Text = info.Status; }
+    }
+    private void Home_Click(object sender, RoutedEventArgs e) { ModulePanel.Visibility = Visibility.Collapsed; HomePanel.Visibility = Visibility.Visible; Footer.Text = "Ready"; }
+    private void New_Click(object sender, RoutedEventArgs e) { Editor.Clear(); Footer.Text = "New script"; }
+    private void Open_Click(object sender, RoutedEventArgs e)
+    {
+        var d = new OpenFileDialog { Filter = "Lua/Luau scripts|*.lua;*.luau|All files|*.*" };
+        if (d.ShowDialog() == true) try { Editor.Text = File.ReadAllText(d.FileName); Footer.Text = "Opened " + Path.GetFileName(d.FileName); } catch (Exception ex) { Error(ex); }
+    }
+    private void Save_Click(object sender, RoutedEventArgs e)
+    {
+        var d = new SaveFileDialog { Filter = "Lua script|*.lua|Luau script|*.luau|All files|*.*", FileName = "NewScript.lua" };
+        if (d.ShowDialog() == true) try { File.WriteAllText(d.FileName, Editor.Text); Footer.Text = "Saved " + Path.GetFileName(d.FileName); } catch (Exception ex) { Error(ex); }
+    }
+    private void Validate_Click(object sender, RoutedEventArgs e) { var result = ScriptValidator.ValidateBasic(Editor.Text); Output.AppendText(result + Environment.NewLine); Footer.Text = "Basic validation finished"; }
+    private void Run_Click(object sender, RoutedEventArgs e)
+    {
+        var lua = FindLua();
+        if (lua is null) { Output.AppendText("Lua runtime not found. Install Lua and add it to PATH. Roblox APIs are not provided by standard Lua.\n"); return; }
+        var temp = Path.Combine(Path.GetTempPath(), "redengine-" + Guid.NewGuid().ToString("N") + ".lua");
+        try
+        {
+            File.WriteAllText(temp, Editor.Text);
+            var psi = new ProcessStartInfo(lua, $"\"{temp}\"") { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
+            using var p = Process.Start(psi); if (p is null) throw new InvalidOperationException("Could not start Lua.");
+            var stdout = p.StandardOutput.ReadToEndAsync(); var stderr = p.StandardError.ReadToEndAsync();
+            if (!p.WaitForExit(5000)) { p.Kill(true); Output.AppendText("Execution stopped after five seconds.\n"); }
+            else { Output.AppendText(stdout.GetAwaiter().GetResult()); Output.AppendText(stderr.GetAwaiter().GetResult()); Output.AppendText($"Exit code: {p.ExitCode}\n"); }
+        }
+        catch (Exception ex) { Error(ex); } finally { try { File.Delete(temp); } catch { } }
+    }
+    private static string? FindLua()
+    {
+        foreach (var dir in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
+        { var p = Path.Combine(dir.Trim('"'), OperatingSystem.IsWindows() ? "lua.exe" : "lua"); if (File.Exists(p)) return p; }
+        return null;
+    }
+    private static void Error(Exception ex) => MessageBox.Show(ex.Message, "RedEngine", MessageBoxButton.OK, MessageBoxImage.Error);
+}
