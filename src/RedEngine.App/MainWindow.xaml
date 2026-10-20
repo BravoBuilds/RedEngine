@@ -4,11 +4,6 @@
  Title="RedEngine" Height="720" Width="1080" MinHeight="560" MinWidth="820"
  WindowStartupLocation="CenterScreen" Background="{StaticResource LauncherBackground}" Foreground="#F7F7F8">
  <Window.Resources>
-  <LinearGradientBrush x:Key="LauncherBackground" StartPoint="0,0" EndPoint="1,1">
-   <GradientStop Color="#A8C9F1" Offset="0"/>
-   <GradientStop Color="#729BD1" Offset="0.48"/>
-   <GradientStop Color="#3D5E91" Offset="1"/>
-  </LinearGradientBrush>
   <Style x:Key="Tile" TargetType="{x:Type Button}">
    <Setter Property="Height" Value="90"/>
    <Setter Property="Margin" Value="3"/>
