@@ -1,8 +1,8 @@
 <Window x:Class="RedEngine.MainWindow"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- Title="RedEngine" Height="720" Width="1080" MinHeight="560" MinWidth="820"
- WindowStartupLocation="CenterScreen" Background="{StaticResource LauncherBackground}" Foreground="#F7F7F8">
+ Title="redENGINE" Height="650" Width="900" MinHeight="560" MinWidth="760"
+ WindowStartupLocation="CenterScreen" Background="#080808" Foreground="#F7F7F8">
  <Window.Resources>
   <Style x:Key="Tile" TargetType="{x:Type Button}">
    <Setter Property="Height" Value="90"/>
@@ -36,16 +36,20 @@
  </Window.Resources>
  <Grid>
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-  <Border Background="#D916171B" Padding="18,10">
-   <DockPanel><TextBlock Text="redENGINE" FontSize="23" FontWeight="SemiBold"/><TextBlock DockPanel.Dock="Right" Text="LOCAL DEVELOPMENT WORKSPACE" Foreground="#B9C0CA" VerticalAlignment="Center"/></DockPanel>
+  <Border Background="#080808" Padding="18,10" BorderBrush="#252525" BorderThickness="0,0,0,1">
+   <DockPanel><TextBlock Text="redENGINE" FontSize="23" FontWeight="SemiBold"/><TextBlock DockPanel.Dock="Right" Text="HOME TO TOGGLE" Foreground="#B9C0CA" VerticalAlignment="Center"/></DockPanel>
   </Border>
-  <Grid Grid.Row="1" Margin="24">
+  <Grid Grid.Row="1" Margin="24" Background="#080808">
    <StackPanel x:Name="HomePanel" HorizontalAlignment="Center" VerticalAlignment="Center">
-    <Border Width="110" Height="110" BorderBrush="White" BorderThickness="2" Background="#15171B" HorizontalAlignment="Center" Margin="0,0,0,4">
-     <Grid><TextBlock Text="E" Foreground="#E60028" FontSize="86" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-28,0,0,0"/><TextBlock Text="R" Foreground="White" FontSize="86" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="30,0,0,0"/></Grid>
+    <Border Width="74" Height="74" BorderBrush="#E60028" BorderThickness="1" Background="#0B0B0B" HorizontalAlignment="Center" Margin="0,0,0,8">
+     <Grid><TextBlock Text="E" Foreground="#E60028" FontSize="58" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-28,0,0,0"/><TextBlock Text="R" Foreground="White" FontSize="86" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="30,0,0,0"/></Grid>
     </Border>
-    <TextBlock Text="redENGINE" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-    <Button Content="Launch Roblox" Click="LaunchRoblox_Click" Width="190" Height="38" Margin="0,0,0,22" Background="#D9151B2A" Foreground="White" BorderBrush="#E60028" FontWeight="SemiBold" Cursor="Hand"/>
+    <TextBlock HorizontalAlignment="Center" Margin="0,0,0,4"><Run Text="red" Foreground="#E60028"/><Run Text="ENGINE" Foreground="#F2F2F2"/></TextBlock>
+    <TextBlock Text="Launcher ready" Foreground="#777777" FontSize="11" HorizontalAlignment="Center" Margin="0,0,0,18"/>
+    <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,22">
+     <Button Content="Inject" Click="Inject_Click" Width="150" Height="38" Margin="4" Background="#E60028" Foreground="White" BorderBrush="#E60028" FontWeight="SemiBold" Cursor="Hand"/>
+     <Button Content="Launch Roblox" Click="LaunchRoblox_Click" Width="150" Height="38" Margin="4" Background="#151515" Foreground="White" BorderBrush="#444444" FontWeight="SemiBold" Cursor="Hand"/>
+    </WrapPanel>
     <UniformGrid Columns="5" Rows="2" MaxWidth="700">
      <Button Content="〈/〉&#x0a;Executor" Tag="Executor" Click="Navigate_Click" Style="{StaticResource Tile}"/>
      <Button Content="▰&#x0a;Dumper" Tag="Dumper" Click="Navigate_Click" Style="{StaticResource Tile}"/>
@@ -73,6 +77,6 @@
     </Grid>
    </Border>
   </Grid>
-  <Border Grid.Row="2" Background="#D916171B" Padding="12,7"><DockPanel><TextBlock Text="Local workspace • no remote connection active" Foreground="#D0D5DC"/><TextBlock x:Name="Footer" DockPanel.Dock="Right" Text="Ready"/></DockPanel></Border>
+  <Border Grid.Row="2" Background="#080808" Padding="12,7" BorderBrush="#252525" BorderThickness="0,1,0,0"><DockPanel><TextBlock Text="Local workspace • no remote connection active" Foreground="#D0D5DC"/><TextBlock x:Name="Footer" DockPanel.Dock="Right" Text="Ready"/></DockPanel></Border>
  </Grid>
 </Window>
