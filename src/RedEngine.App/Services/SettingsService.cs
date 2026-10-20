@@ -1,8 +1,12 @@
+using System.IO;
 using System.Text.Json;
+
 namespace RedEngine.Services;
+
 public sealed class SettingsService
 {
     public string SettingsPath { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RedEngine", "settings.json");
+
     public void EnsureDefaults()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
