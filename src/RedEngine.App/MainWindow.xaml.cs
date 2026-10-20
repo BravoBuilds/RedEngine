@@ -4,11 +4,25 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
+using System.Runtime.InteropServices;
 
 namespace RedEngine;
 
 public partial class MainWindow : Window
 {
+    private const int HotkeyId = 0x5245;
+    private const int WmHotkey = 0x0312;
+    private const uint ModNone = 0x0000;
+    private const uint VkHome = 0x24;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+    private HwndSource? _source;
+    private bool _hotkeyRegistered;
     private readonly SettingsService _settings = new();
     private static readonly Dictionary<string, (string Description, string Status)> Modules = new()
     {
@@ -22,9 +36,43 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        SourceInitialized += MainWindow_SourceInitialized;
+        Closed += MainWindow_Closed;
         _settings.EnsureDefaults();
         Editor.Text = "-- RedEngine local Lua workspace\n-- Roblox APIs are not available in standard Lua.\n\nprint(\"Hello from local Lua\")\n";
     }
+    private void Inject_Click(object sender, RoutedEventArgs e)
+    {
+        Footer.Text = "Inject is a UI demo only; no process injection is performed.";
+    }
+
+    private void MainWindow_SourceInitialized(object? sender, EventArgs e)
+    {
+        var handle = new WindowInteropHelper(this).Handle;
+        _source = HwndSource.FromHwnd(handle);
+        _source?.AddHook(WindowMessageHook);
+        _hotkeyRegistered = RegisterHotKey(handle, HotkeyId, ModNone, VkHome);
+        if (!_hotkeyRegistered) Footer.Text = "Home hotkey unavailable (already in use)";
+    }
+
+    private IntPtr WindowMessageHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == WmHotkey && wParam.ToInt32() == HotkeyId)
+        {
+            if (IsVisible && WindowState != WindowState.Minimized) Hide();
+            else { Show(); WindowState = WindowState.Normal; Activate(); }
+            handled = true;
+        }
+        return IntPtr.Zero;
+    }
+
+    private void MainWindow_Closed(object? sender, EventArgs e)
+    {
+        _source?.RemoveHook(WindowMessageHook);
+        var handle = new WindowInteropHelper(this).Handle;
+        if (_hotkeyRegistered) UnregisterHotKey(handle, HotkeyId);
+    }
+
     private void LaunchRoblox_Click(object sender, RoutedEventArgs e)
     {
         try
