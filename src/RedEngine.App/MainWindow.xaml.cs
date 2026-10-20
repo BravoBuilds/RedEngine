@@ -25,6 +25,19 @@ public partial class MainWindow : Window
         _settings.EnsureDefaults();
         Editor.Text = "-- RedEngine local Lua workspace\n-- Roblox APIs are not available in standard Lua.\n\nprint(\"Hello from local Lua\")\n";
     }
+    private void LaunchRoblox_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo("roblox://") { UseShellExecute = true });
+            Footer.Text = "Opening Roblox";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Roblox could not be opened. Install Roblox from its official source, then try again.\n\n" + ex.Message, "RedEngine", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
     private void Navigate_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not Button b || b.Tag is not string module) return;
