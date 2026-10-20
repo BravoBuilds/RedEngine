@@ -1,9 +1,13 @@
+using System.IO;
 using RedEngine.Models;
+
 namespace RedEngine.Services;
+
 public sealed class LocalFileService
 {
     public string DataRoot { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RedEngine");
     public string ScriptsRoot => Path.Combine(DataRoot, "Local", "Scripts");
+
     public IEnumerable<LocalFileItem> Index(string root, string search = "")
     {
         if (!Directory.Exists(root)) yield break;
@@ -12,7 +16,8 @@ public sealed class LocalFileService
         {
             var current = pending.Pop(); string[] dirs; string[] files;
             try { dirs = Directory.GetDirectories(current); files = Directory.GetFiles(current); }
-            catch (UnauthorizedAccessException) { continue; } catch (IOException) { continue; }
+            catch (UnauthorizedAccessException) { continue; }
+            catch (IOException) { continue; }
             foreach (var dir in dirs) pending.Push(dir);
             foreach (var file in files)
             {
@@ -23,6 +28,7 @@ public sealed class LocalFileService
             }
         }
     }
+
     public string Import(string source)
     {
         if (!File.Exists(source)) throw new FileNotFoundException("Source file no longer exists.", source);
@@ -31,5 +37,6 @@ public sealed class LocalFileService
         if (File.Exists(destination)) destination = Path.Combine(ScriptsRoot, $"{Path.GetFileNameWithoutExtension(name)}-{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}{Path.GetExtension(name)}");
         File.Copy(source, destination, false); return destination;
     }
+
     private static string FormatSize(long size) => size switch { < 1024 => $"{size} B", < 1024 * 1024 => $"{size / 1024d:0.0} KB", _ => $"{size / (1024d * 1024d):0.0} MB" };
 }
